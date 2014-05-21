@@ -1,5 +1,3 @@
-
-
 main: ent
 	exe token_init
 	chars 'hello'

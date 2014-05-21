@@ -1,4 +1,4 @@
-INTSIZE equ 32
+INTSIZE equ 4
 A equ eax
 B equ ebx
 C equ ecx
