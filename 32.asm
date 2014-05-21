@@ -1,0 +1,9 @@
+INTSIZE equ 32
+A equ eax
+B equ ebx
+C equ ecx
+D equ edx
+SP equ esp
+BP equ ebp
+SI equ esi
+DI equ edi
