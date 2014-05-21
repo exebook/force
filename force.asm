@@ -9,6 +9,7 @@ include 'lang.asm'
 include 'macro.asm'
 include 'sys.asm'
 include 'char.asm'
+include 'token.asm'
 
 interpreter '/lib/ld-linux.so.2'
 needed 'libc.so.6'
@@ -17,6 +18,7 @@ import printf,exit,putchar
 segment readable executable
 
 func main
+	exe tokens
 exi
 
 start:
@@ -25,3 +27,5 @@ start:
 	end if
 	Bye
 
+segment readable writable
+memory rd 1024 * 1024

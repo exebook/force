@@ -1,4 +1,5 @@
 INTSIZE equ 4
+INTTYPE equ dword
 A equ eax
 B equ ebx
 C equ ecx

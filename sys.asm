@@ -5,7 +5,7 @@ macro Bye {
 ;format ELF64 executable at 0000000100000000h
 ;
 ;segment readable writeable
-;memory rq 1024 * 1024
+;memory rd 1024 * 1024
 ;input_buffer_size	=	1024 * 1024
 ;input_buffer		rb	input_buffer_size
 ;input_size		rq	1

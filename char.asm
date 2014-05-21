@@ -8,7 +8,8 @@ _str_len:
 	inc	A
 	jmp	@b
 @@:
-	ret	
+	ret
+	
 _prn_str:
 	mov C, A
 	mov A, B

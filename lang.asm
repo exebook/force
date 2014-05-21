@@ -67,8 +67,9 @@ macro exe f, [a] {
 		popvoid
 	else
 		reverse
-			mov A, a
-			push A
+			;mov A, a
+			;push A
+			push INTTYPE a
 		common
 			call f
 		reverse 

@@ -33,7 +33,8 @@ macro check name, value, jumpto {
 
 macro cycle name, value, jumpto {
 	change name, 1
-	cmp A, value
+	pair name, value
+	cmp A, B
 	jne .loop_#jumpto
 }
 
