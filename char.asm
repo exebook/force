@@ -9,7 +9,7 @@ _str_len:
 	jmp	@b
 @@:
 	ret
-	
+
 _prn_str:
 	mov C, A
 	mov A, B
@@ -89,4 +89,19 @@ _prn_int:
 	puts ' '
 	popall
 	ret
+
+macro str_cmp a, b  {
+	get a
+	call _str_len
+	mov C, A
+	pair a, b
+	mov SI, B
+	mov DI, A
+	cld
+	mov A, 0
+	repe cmpsb
+	je @f
+	mov A, 1
+	@@:
+}
 

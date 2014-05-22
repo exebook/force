@@ -1,14 +1,7 @@
-;memory equ 1024 * 1024
-macro get_TOKENS r {
-	if r eq
-		mov A, memory
-	else
-		mov r, memory
-	end if
-}
+NONE equ 99999
 
 func token_init
-	get_TOKENS
+	global TOKEN
 	mov B, 0
 	mov [A], B
 exi
@@ -16,15 +9,13 @@ exi
 func token_add
 	use tok, fun, data
 	var count, table, last, tmp
-;	draw tok
-;	show fun, data
 	; store current count
-	get_TOKENS
+	global TOKEN
 	mov D, [A]
 	set count, D
 
 	; store first token addr
-	get_TOKENS
+	global TOKEN
 	add A, INTSIZE
 	set table
 
@@ -68,7 +59,7 @@ func token_add
 	mov [D], A
 
 	; increment count of tokens
-	get_TOKENS
+	global TOKEN
 	mov B, [A]
 	inc B
 	mov [A], B
@@ -82,7 +73,7 @@ func token_show
 	imul A, INTSIZE * 4
 	set n
 
-	get_TOKENS
+	global TOKEN
 	add A, INTSIZE
 	mov D, A
 	get n
@@ -110,7 +101,7 @@ exi
 func token_list
 	puts '[==========================]', 10
 	var count, table
-	get_TOKENS
+	global TOKEN
 	mov D, [A]
 	set table, D
 	set count, 0
@@ -119,23 +110,56 @@ func token_list
 		exe token_show
 	cycle count, table, c
 	puts '[==========================]', 10
-	exi
+exi
 
-func tokens
-	exe token_init
-	chars 'hello'
-	exe token_add, A, 100, 111
-	chars 'world'
-	exe token_add, A, 200, 222
-	chars 'of'
-	exe token_add, A, 300, 333
-	chars 'force'
-	exe token_add, A, 400, 444
-	exe token_list
-	
-;	chars 'world'
-;	exe token_find, rax
-;	call _prn_int
-;	exe token_list
-	exi
+func token_get
+	use n
+	arg n
+	imul A, INTSIZE * 4
+	set n
 
+	global TOKEN
+	add A, INTSIZE
+
+	mov D, A
+	get n
+	add A, D
+exi A
+
+
+
+func token_find
+	use name
+	var count, table, len, R, curr
+	get name
+	call _str_len
+	set len
+	set R, NONE
+
+	global TOKEN
+	mov D, [A]
+	set table, D
+	set count, 0
+	token_find_loop:
+		get count
+		exe token_get
+		mov A, [A]
+		set curr
+		str_cmp name, curr
+		mov D, 48
+		cmp A, 0
+		jne @f
+			mov D, 49
+			get count
+			set R
+		@@:
+		mov A, D
+		get count
+		inc A
+		set count
+		pair count, table
+		sub A, B
+	jne token_find_loop
+	log ''
+	get R
+exi
