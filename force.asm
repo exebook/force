@@ -19,7 +19,22 @@ macro gvar [name] {
 }
 gvar CODEBASE, CODE, STACK, TOKEN, CALL
 
+NEXT equ INTSIZE * 0
+PREV equ INTSIZE * 1
+DATA equ INTSIZE * 2
+FUNC equ INTSIZE * 3
+STRING equ  INTSIZE * 4
+
+CODE_SIZE equ STRING + INTSIZE
+
 macro global x { mov A, [memory + x] }
+macro gset id, [value] {
+	if ~ value eq
+		mov A, value
+	end if
+	mov [memory + id], A
+}
+
 
 include 'token.asm'
 
@@ -31,26 +46,7 @@ segment readable executable
 
 include 'main.asm'
 
-macro gset id, [value] {
-	if ~ value eq
-		mov A, value
-	end if
-	mov [memory + id], A
-}
-
 start:
-	alloc 1000
-	gset CODE
-	gset CODEBASE
-	alloc 1000
-	gset STACK
-	alloc 1000
-	gset TOKEN
-	alloc 1000
-	gset CALL
-	
-	global CODE
-	global CALL
 	if success = 0
 		exe main
 	end if
