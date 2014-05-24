@@ -36,7 +36,7 @@ macro gset id, [value] {
 }
 
 
-include 'token.asm'
+include 'table.asm'
 
 interpreter '/lib/ld-linux.so.2'
 needed 'libc.so.6'

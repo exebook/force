@@ -1,5 +1,3 @@
-include 'func.asm'
-
 R0 equ A
 R1 equ C
 R2 equ D
@@ -168,33 +166,88 @@ macro setref name, index_or_value, value {
 	end if
 }
 
+;void tokenize(int *txt, int **token, int *count) {
+;  while (*txt <= ' ' && *txt > 0) txt++;
+;  if (*txt == 0) { *count = 0; return; }
+;  if (txt[0] == '\'') {
+;     *token = txt; txt++; *count = 2;
+;     while (*txt != '\'') txt++, (*count)++;
+;     return;
+;  }
+;  *token = txt; *count = 0; *token = txt;
+;  while (*txt++ > ' ') (*count)++;
+;}
+
 func tokenize
-	use a, s, t, n
-	get a, B
-	mov A, [B - INTSIZE * 0]
-	set s
-	ref a, 2
-	set n
-	draw s
+	use a
+	var s, t
+	
+	ref a
+	.l1:
+		cmp [A], byte 0
+		je .return_zero
+		cmp [A], byte 32
+		jg .skip1
+		inc A
+	jmp .l1
+	
+.return_zero:
+	exi 0
+
+.skip1:
+	setref a, 1, A
+	ref a, 1
+	
+	.l2:
+		cmp [A], byte 32
+		jle .tokend
+		inc A
+	jmp .l2
+	
+.tokend:
+	set t
+	get t, D
+	ref a, 1
+	sub D, A
+	mov A, D
+	setref a, 2, A
+exi 1
+
+func test_tokenizer
+	use s
+	var t, n
+.l1:
+	pet s
+	exe tokenize
+	cmp A, 0
+	je .b1
+	pair n, t
+	call _prn_str
+	puts ' '
 	show n
-	setref a, 2, 505
-	chars 'world'
-	setref a, 0, A
+	puts 10
+	
+	pair t, n
+	add A, B
+	set s
+	
+	jmp .l1	
+.b1:
+	log 'enough'
 exi
 
 func main
 	var s, t, n
-	chars 'abc 123 xyz'
+	chars '   abc  12345  xyz'
 	set s
-	set n, 333
-	pet s
-	exe tokenize
-	show n
-	draw s
+	exe test_tokenizer
+	
+;	draw t
 ;	puts 'start',10
 ;	exe initmem
 ;	exe adder
 ;	exe process
+	puts 10
 exi
 
 macro token_ins name, fu, dat {
