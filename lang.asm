@@ -58,7 +58,7 @@ macro exi n {
 	ret
 }
 
-macro popvoid x { pop B }
+macro popvoid x { add SP, INTSIZE }
 
 macro exe f, [a] {
 	if a eq
@@ -102,11 +102,13 @@ macro arg a, b {
 }
 
 macro get n, dest {
+	push B
 	mov B, n
 	inc B
 	imul B, INTSIZE
 	mov A, BP
 	sub A, B
+	pop B
 	if dest eq
 		mov A, [A]
 	else
@@ -132,9 +134,10 @@ macro set n, v {
 	mov B, BP
 	sub B, C
 	if ~ v eq
-		mov A, v
+		mov [B], INTTYPE v
+	else
+		mov [B], A
 	end if
-	mov [B], A
 }
 
 macro pair a, b { ; a->ax, b->bx

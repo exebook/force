@@ -40,3 +40,43 @@ macro cycle name, value, jumpto {
 
 macro lab l { .loop_#l: }
 
+macro alloc numbers { cinvoke malloc, numbers * INTSIZE }
+
+_gcount equ 0
+macro gvar [name] {
+	forward
+	name equ _gcount
+	_gcount equ _gcount + INTSIZE
+}
+
+macro global x { mov A, [memory + x] }
+macro gset id, [value] {
+	if ~ value eq
+		mov A, value
+	end if
+	mov [memory + id], A
+}
+
+macro ref name, index {
+	get name
+	if index eq
+		mov A, [A]
+	else
+		mov A, [A - INTSIZE * index]
+	end if
+}
+
+macro setref name, index_or_value, value {
+	if value eq
+		mov C, INTTYPE index_or_value
+	else
+		mov C, INTTYPE value
+	end if
+	get name
+	if value eq
+		mov [A], C
+	else
+		mov [A - INTSIZE * index_or_value], C
+	end if
+}
+

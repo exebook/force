@@ -1,252 +1,149 @@
-R0 equ A
-R1 equ C
-R2 equ D
-R3 equ SI
-REXE equ B
-RSTACK equ DI
-RBASE equ BP
-RBASE_OFF equ INTSIZE * 0
-RSTACK_OFF equ INTSIZE * 1
-REXE_OFF equ INTSIZE * 2
+include 'core.asm'
+include 'table.asm'
+include 'lex.asm'
+include 'fu.asm'
 
-macro STEP {
-	mov REXE, [REXE]
-	jmp dword [REXE + 12]
-}
-
-macro act fu, a, b, c {
-	push REXE
-	push RSTACK
-	push RBASE
-	mov A, SP
-	push A
-	exe fu, A
-	pop A
-	mov RBASE, [A + RBASE_OFF]
-	mov RSTACK, [A + RSTACK_OFF]
-	mov REXE, [A + REXE_OFF]
-}
-
-func act_prn
-	use info
-	get info
-	mov B, [A + RSTACK_OFF]
-	add [A + RSTACK_OFF], INTTYPE INTSIZE
-	mov A, [B]
+func show_codef
+	use a
+	get a, B
+	global CODEBASE
+	xchg A, B
+	sub A, B
 	call _prn_int
-	exi
-	
-func act_prns
-	use info, s
-	get info
-	mov B, [A + RSTACK_OFF]
-	add [A + RSTACK_OFF], INTTYPE INTSIZE
-	mov A, [B]
-	set s
-	draw s
-	puts ' '
-	exi
-
-func_num:
-	sub RSTACK, INTSIZE
-	mov R0, [REXE + DATA]
-	mov [RSTACK], R0
-	STEP
-
-func_add:
-	mov R0, [RSTACK]
-	add RSTACK, INTSIZE
-	add [RSTACK], R0
-	STEP
-	
-func_prn:
-	act act_prn, R0
-	STEP
-
-func_prns:
-	act act_prns, R0
-	STEP
-
-func_555:
-	puts '555 '
-	STEP
-	
-func_777:
-	puts '777 '
-	STEP
-	
-func_quit:
-	puts 'quit',10
-	Bye
-
-func ontxt
+	puts 10
 exi
 
-func_ontxt:
-	act ontxt
-	STEP
-
-macro addc fu, dat {
-	mov [B + NEXT], A
-	mov [A + PREV], B
-	mov C, 0
-	if ~ dat eq
-		mov C, dat
-	end if
-	mov [A + DATA], C
-	mov [A + FUNC], INTTYPE fu
-	mov [A + STRING], INTTYPE 0
-	mov B, A
-	add A, CODE_SIZE
+macro show_code msg {
+	pushall
+	puts msg, ': '
+	exe show_codef, A
+	popall
 }
 
-func adder
-	chars 'hello!'
+func act_tok
+	use info
+	var s, n
+	get info, D
+	mov D, [D + EXE_OFF]
+	mov A, [D + STRING]
+	set s
+	mov A, [D + DATA]
+	set n
+	pair s, n
+	exe token_find, A, B
+	cmp A, NONE
+	jne .ok
+		puts '*token "'
+		pair n, s
+		call _prn_str
+		puts '" not_found '
+		exi 0
+	.ok:
+	exe token_get
 	mov D, A
+	mov A, [D + FUNC]
+exi A
+
+func_token_dispatch:
+	act act_tok
+	cmp A, 0
+	je .skip
+;	call _prn_int
+	jmp A
+	.skip:
+	STEP
+
+func act_txtcut ; [*txtcut, quit] -> [*token, txtcut, quit]
+	use info
+	var x, s, ret_t, ret_n, new_s, next
+	get info, D ; SET X
+		mov A, [D + EXE_OFF]
+		set x
+	get x ; SET NEXT
+		mov A, [A + NEXT]
+		set next
+	get x ; SET S
+		mov A, [A + STRING]
+		set s
+	pet s ; TOKENIZE
+		exe tokenize
+		cmp A, 0
+		je .zero
+	pair ret_t, ret_n ; SET NEW_S
+		add A, B
+		set new_s
+	; SET CURRENT TO TOKEN-DISPATCH	
+		get x, C
+		mov [C + FUNC], INTTYPE func_token_dispatch
+		get ret_n
+		mov [C + DATA], A ; token length
+		global CODE
+		mov [C + NEXT], A
+		get ret_t
+		mov [C + STRING], A ; token start after spaces
+	; MAKE NEW TXT-CUT
+		global CODE
+		mov D, A
+		mov [D + FUNC], INTTYPE func_txtcut
+		get next
+		mov [D + NEXT], A
+		get new_s
+		mov [D + STRING], A
+		add D, CODE_SIZE
+		gset CODE, D
+		exi 1
+	.zero:
+		puts 'zero-terminated', 10
+exi 0
+
+func_txtcut:
+	act act_txtcut
+	cmp R0, 0
+	je .next
+	jmp dword [REXE + FUNC]
+	.next:
+	STEP
+
+func_boot: ; [*boot] -> [*txtcut, quit]
 	global CODE
-	mov B, A
-	addc func_num, 100
-	addc func_num, 200
-	addc func_num, 345
-	addc func_num, 123
-	addc func_add
-	addc func_prn
-	addc func_prn
-	addc func_num, D
-	addc func_prns
-	
-	addc func_prn
-	addc func_quit
+	mov [A + PREV], REXE
+	mov [A + FUNC], INTTYPE func_quit
+	mov [REXE + NEXT], A
+	mov [REXE + FUNC], INTTYPE func_txtcut
+	add A, CODE_SIZE
 	gset CODE
-exi
-
-func initmem
-	alloc 1000
-	gset CODE
-	gset CODEBASE
-
-	alloc 1000
-	add A, 100
-	gset STACK
-
-	alloc 1000
-	gset TOKEN
-	alloc 1000
-	gset CALL
-exi
+	jmp func_txtcut
 
 func process
 	global CODEBASE
 	mov REXE, A
 	global STACK
 	mov RSTACK, A
-	jmp INTTYPE [REXE + 12]
-exi
-
-macro ref name, index {
-	get name
-	if index eq
-		mov A, [A]
-	else
-		mov A, [A - INTSIZE * index]
-	end if
-}
-
-macro setref name, index_or_value, value {
-	if value eq
-		mov C, INTTYPE index_or_value
-	else
-		mov C, INTTYPE value
-	end if
-	get name
-	if value eq
-		mov [A], C
-	else
-		mov [A - INTSIZE * index_or_value], C
-	end if
-}
-
-;void tokenize(int *txt, int **token, int *count) {
-;  while (*txt <= ' ' && *txt > 0) txt++;
-;  if (*txt == 0) { *count = 0; return; }
-;  if (txt[0] == '\'') {
-;     *token = txt; txt++; *count = 2;
-;     while (*txt != '\'') txt++, (*count)++;
-;     return;
-;  }
-;  *token = txt; *count = 0; *token = txt;
-;  while (*txt++ > ' ') (*count)++;
-;}
-
-func tokenize
-	use a
-	var s, t
-	
-	ref a
-	.l1:
-		cmp [A], byte 0
-		je .return_zero
-		cmp [A], byte 32
-		jg .skip1
-		inc A
-	jmp .l1
-	
-.return_zero:
-	exi 0
-
-.skip1:
-	setref a, 1, A
-	ref a, 1
-	
-	.l2:
-		cmp [A], byte 32
-		jle .tokend
-		inc A
-	jmp .l2
-	
-.tokend:
-	set t
-	get t, D
-	ref a, 1
-	sub D, A
-	mov A, D
-	setref a, 2, A
-exi 1
-
-func test_tokenizer
-	use s
-	var t, n
-.l1:
-	pet s
-	exe tokenize
-	cmp A, 0
-	je .b1
-	pair n, t
-	call _prn_str
-	puts ' '
-	show n
-	puts 10
-	
-	pair t, n
-	add A, B
-	set s
-	
-	jmp .l1	
-.b1:
-	log 'enough'
+	jmp INTTYPE [REXE + FUNC]
 exi
 
 func main
+	exe initmem
+	exe tokens
+	global CODE
+	show_code 'code base'
+
 	var s, t, n
-	chars '   abc  12345  xyz'
+	chars '555 777 + .',0
 	set s
-	exe test_tokenizer
+
+	global CODE
+	mov D, A
+	mov [D + NEXT], INTTYPE 0
+	mov [D + PREV], INTTYPE 0
+	mov [D + DATA], INTTYPE 0
+	mov [D + FUNC], INTTYPE func_boot
+	get s
+	mov [D + STRING], A
+	add D, CODE_SIZE
+	gset CODE, D
 	
-;	draw t
-;	puts 'start',10
-;	exe initmem
-;	exe adder
-;	exe process
+	exe process
 	puts 10
 exi
 
@@ -257,24 +154,11 @@ macro token_ins name, fu, dat {
 
 func tokens
 	exe token_init
-	token_ins 'hello', 100, 111
-	token_ins 'world', 200, 222
-	token_ins 'of', 300, 333
-	token_ins 'force', 400, 444
+	token_ins '555', func_555, 111
+	token_ins '777', func_777, 222
+	token_ins '.', func_prn, 222
+	token_ins '+', func_add, 222
+	token_ins 'quit', func_quit, 333
 	exe token_list
-	
-	chars 'world'
-	exe token_find, A
-	call _prn_int
-	chars 'hello'
-	exe token_find, A
-	call _prn_int
-	chars 'world'
-	exe token_find, A
-	call _prn_int
-	chars 'force'
-	exe token_find, A
-	call _prn_int
-;	exe token_list
-	exi
+exi
 

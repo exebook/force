@@ -8,7 +8,7 @@ exi
 
 func token_add
 	use tok, fun, data
-	var count, table, last, tmp
+	var count, table, last, len_addr
 	; store current count
 	global TOKEN
 	mov D, [A]
@@ -21,41 +21,40 @@ func token_add
 
 	; calculate count * 32
 	get count
-	imul A, INTSIZE*4
-	set tmp
+	imul A, INTSIZE * 4
 
 	; calculate last item
-	pair table, tmp
+	mov B, A
+	get table
 	add A, B
 	; store last item offset
 	set last
 
 	; store token
-	get last
-	mov D, A
+	get last, D
 	get tok
 	mov [D], A
 
 	; store token length address
 	add D, INTSIZE
-	set tmp, D
+	set len_addr, D
 
 	; calc length
 	get tok
 	call _str_len
 	mov D, A
-	get tmp
 
 	; store length
+	get len_addr
 	mov [A], D
 
 	; store func & data
 	mov D, A
 	add D, INTSIZE
-	get fun
+	get data
 	mov [D], A
 	add D, INTSIZE
-	get data
+	get fun
 	mov [D], A
 
 	; increment count of tokens
@@ -129,37 +128,34 @@ exi A
 
 
 func token_find
-	use name
-	var count, table, len, R, curr
+	use name, len
+	var id, table, R, curr, curr_len
 	get name
-	call _str_len
-	set len
 	set R, NONE
 
 	global TOKEN
 	mov D, [A]
 	set table, D
-	set count, 0
+	set id, 0
 	token_find_loop:
-		get count
+		get id
 		exe token_get
-		mov A, [A]
+		mov D, A
+		mov A, [D]
 		set curr
-		str_cmp name, curr
-		mov D, 48
+		mov A, [D + INTSIZE]
+		set curr_len
+		str_cmp name, len, curr, curr_len
 		cmp A, 0
 		jne @f
-			mov D, 49
-			get count
+			get id
 			set R
 		@@:
-		mov A, D
-		get count
+		get id
 		inc A
-		set count
-		pair count, table
+		set id
+		pair id, table
 		sub A, B
 	jne token_find_loop
-	log ''
 	get R
 exi

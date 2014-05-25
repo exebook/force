@@ -90,10 +90,13 @@ _prn_int:
 	popall
 	ret
 
-macro str_cmp a, b  {
-	get a
-	call _str_len
-	mov C, A
+macro str_cmp a, alen, b, blen  {
+	get alen, B
+	get blen, C
+	mov A, 1
+	cmp C, B
+	jne @f
+	get alen, C
 	pair a, b
 	mov SI, B
 	mov DI, A
