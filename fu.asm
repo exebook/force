@@ -1,19 +1,4 @@
 
-macro act fu, a, b, c {
-	push REXE
-	push RSTACK
-	push RBASE
-	mov A, SP
-	push A
-	exe fu, A
-	mov R1, A
-	pop A
-	mov RBASE, [A + BASE_OFF]
-	mov RSTACK, [A + STACK_OFF]
-	mov REXE, [A + EXE_OFF]
-	mov A, R1
-}
-
 func_nop:
 	pushall
 	puts 'nop '
@@ -41,6 +26,8 @@ func act_prns
 	exi
 
 func_num:
+	mov A, REXE
+	mov A, [A + DATA]
 	sub RSTACK, INTSIZE
 	mov R0, [REXE + DATA]
 	mov [RSTACK], R0
@@ -52,6 +39,35 @@ func_add:
 	add [RSTACK], R0
 	STEP
 	
+func_sub:
+	mov R0, [RSTACK]
+	add RSTACK, INTSIZE
+	sub [RSTACK], R0
+	STEP
+	
+func_swap:
+	mov R0, [RSTACK]
+	mov R1, [RSTACK + INTSIZE]
+	mov [RSTACK], R1
+	mov [RSTACK + INTSIZE], R0
+	STEP
+	
+func_dup:
+	mov R0, [RSTACK]
+	sub RSTACK, INTSIZE
+	mov [RSTACK], R0
+	STEP
+	
+func_over:
+	mov R0, [RSTACK + INTSIZE]
+	sub RSTACK, INTSIZE
+	mov [RSTACK], R0
+	STEP
+	
+func_drop:
+	add RSTACK, INTSIZE
+	STEP
+
 func_prn:
 	act act_prn, R0
 	STEP
@@ -75,12 +91,4 @@ func_777:
 func_quit:
 	puts 'quit',10
 	Bye
-
-func ontxt
-exi
-
-func_ontxt:
-	act ontxt
-	STEP
-
 

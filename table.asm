@@ -1,5 +1,12 @@
 NONE equ 99999
 
+TAB_NAME equ 0
+TAB_LENGTH equ 1
+TAB_DATA equ 2
+TAB_FUNC equ 3
+
+TAB_ITEM_SIZE equ 4 * INTSIZE
+
 func token_init
 	global TOKEN
 	mov B, 0
@@ -8,7 +15,7 @@ exi
 
 func token_add
 	use tok, fun, data
-	var count, table, last, len_addr
+	var count, table, last, len
 	; store current count
 	global TOKEN
 	mov D, [A]
@@ -19,9 +26,9 @@ func token_add
 	add A, INTSIZE
 	set table
 
-	; calculate count * 32
+	; calculate count * item_size
 	get count
-	imul A, INTSIZE * 4
+	imul A, TAB_ITEM_SIZE
 
 	; calculate last item
 	mov B, A
@@ -30,32 +37,21 @@ func token_add
 	; store last item offset
 	set last
 
-	; store token
-	get last, D
-	get tok
-	mov [D], A
-
-	; store token length address
-	add D, INTSIZE
-	set len_addr, D
-
 	; calc length
 	get tok
 	call _str_len
-	mov D, A
+	set len
 
-	; store length
-	get len_addr
-	mov [A], D
-
-	; store func & data
-	mov D, A
-	add D, INTSIZE
+	; store token
+	get last, D
+	get tok
+	mov [D + TAB_NAME * INTSIZE], A
+	get len
+	mov [D + TAB_LENGTH * INTSIZE], A
 	get data
-	mov [D], A
-	add D, INTSIZE
+	mov [D + TAB_DATA * INTSIZE], A
 	get fun
-	mov [D], A
+	mov [D + TAB_FUNC * INTSIZE], A
 
 	; increment count of tokens
 	global TOKEN
@@ -69,7 +65,7 @@ func token_show
 	use n
 	var item
 	get n
-	imul A, INTSIZE * 4
+	imul A, TAB_ITEM_SIZE
 	set n
 
 	global TOKEN
@@ -114,7 +110,7 @@ exi
 func token_get
 	use n
 	arg n
-	imul A, INTSIZE * 4
+	imul A, TAB_ITEM_SIZE
 	set n
 
 	global TOKEN
@@ -141,9 +137,9 @@ func token_find
 		get id
 		exe token_get
 		mov D, A
-		mov A, [D]
+		mov A, [D + TAB_NAME * INTSIZE]
 		set curr
-		mov A, [D + INTSIZE]
+		mov A, [D + TAB_LENGTH * INTSIZE]
 		set curr_len
 		str_cmp name, len, curr, curr_len
 		cmp A, 0
