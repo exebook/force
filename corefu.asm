@@ -7,9 +7,9 @@ macro act fu, a, b, c {
 	exe fu, A
 	mov R1, A
 	pop A
-	mov RBASE, [A + BASE_OFF]
-	mov RSTACK, [A + STACK_OFF]
-	mov REXE, [A + EXE_OFF]
+	pop RBASE
+	pop RSTACK
+	pop REXE
 	mov A, R1
 }
 
@@ -75,8 +75,6 @@ func act_tok ; return FUNC or 0
 	mov D, [D + EXE_OFF]
 	pop A
 	mov [D + FUNC], A
-	
-
 exi A
 
 func_token_dispatch:
@@ -85,6 +83,20 @@ func_token_dispatch:
 	je .skip
 	jmp A
 	.skip:
+	STEP
+
+func_token_scan:
+	mov REXE, [REXE] ; *token abc quit -> [abc 3] *quit
+	mov R0, [REXE + STRING]
+	mov R1, [REXE + DATA]
+	sub RSTACK, INTSIZE
+	mov [RSTACK], R0
+	sub RSTACK, INTSIZE
+	mov [RSTACK], R1
+	gset CUTMODE, 1
+	pushvm
+	puts '[-]', 10
+	popvm
 	STEP
 
 func act_txtcut ; [*txtcut, quit] -> [*token, txtcut, quit]
@@ -103,12 +115,20 @@ func act_txtcut ; [*txtcut, quit] -> [*token, txtcut, quit]
 		exe tokenize
 		cmp A, 0
 		je .zero
+
+;	pair ret_n, ret_t ; DEBUG TOKEN
+;	call _prn_str
+;	puts ' '
+
 	pair ret_t, ret_n ; SET NEW_S
 		add A, B
 		set new_s
+;		puts '->'		
+;		draw new_s
 	; SET CURRENT TO TOKEN-DISPATCH	
 		get x, C
-		mov [C + FUNC], INTTYPE func_token_dispatch
+		global CUTMODE
+		mov [C + FUNC], A
 		get ret_n
 		mov [C + DATA], A ; token length
 		global CODE
@@ -134,6 +154,7 @@ func_txtcut:
 	act act_txtcut
 	cmp R0, 0
 	je .next
+	; check mode
 	jmp dword [REXE + FUNC]
 	.next:
 	STEP

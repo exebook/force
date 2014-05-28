@@ -14,8 +14,8 @@ func token_init
 exi
 
 func token_add
-	use tok, fun, data
-	var count, table, last, len
+	use tok, len, fun, data
+	var count, table, last
 	; store current count
 	global TOKEN
 	mov D, [A]
@@ -36,11 +36,6 @@ func token_add
 	add A, B
 	; store last item offset
 	set last
-
-	; calc length
-	get tok
-	call _str_len
-	set len
 
 	; store token
 	get last, D

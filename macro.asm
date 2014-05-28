@@ -52,9 +52,10 @@ macro gvar [name] {
 macro global x { mov A, [memory + x] }
 macro gset id, [value] {
 	if ~ value eq
-		mov A, value
+		mov [memory + id], INTTYPE value
+	else
+		mov [memory + id], A
 	end if
-	mov [memory + id], A
 }
 
 macro ref name, index {
