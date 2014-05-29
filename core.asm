@@ -1,4 +1,4 @@
-gvar GCOUNT, CODEBASE, CODE, STACK, TOKEN, CALL, CUTMODE
+gvar GCOUNT, CODEBASE, CODE, STACK, TOKEN, CALL, CUTMODE, CURTOK
 
 NEXT equ INTSIZE * 0
 PREV equ INTSIZE * 1
@@ -31,6 +31,31 @@ macro popvm { irp R, RBASE, RSTACK, REXE \{ pop R \} }
 macro STEP {
 	mov REXE, [REXE]
 	jmp INTTYPE [REXE + FUNC]
+}
+
+macro need N {
+	push REXE
+	push RSTACK ; use RSTACK as count
+	mov RSTACK, N
+	local .l
+	.l:
+		mov REXE, [REXE]
+		act act_txtcut
+		dec RSTACK
+		cmp RSTACK, 0
+		jg .l
+	pop RSTACK
+	pop REXE
+}
+
+macro vmpop reg {
+	mov reg, [RSTACK]
+	add RSTACK, INTSIZE
+}
+
+macro vmpush reg {
+	sub RSTACK, INTSIZE
+	mov [RSTACK], reg
 }
 
 func initmem

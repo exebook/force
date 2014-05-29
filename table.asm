@@ -53,6 +53,7 @@ func token_add
 	mov B, [A]
 	inc B
 	mov [A], B
+	get last
 exi
 
 
@@ -69,7 +70,19 @@ func token_show
 	get n
 	add A, D
 	set item ; store item pointer
-	puts '[                          ]', 13, '[      '
+	puts '[                                    ]', 13, '[  '
+
+	show item
+	
+	get item
+	add A, INTSIZE * TAB_FUNC
+	mov A, [A]
+	call _prn_int
+	
+;	add A, INTSIZE * TAB_DATA
+;	mov A, [A]
+;	call _prn_int
+
 	get item
 	mov B, [A]
 	add A, INTSIZE
@@ -77,19 +90,12 @@ func token_show
 	call _prn_str
 	puts ' '
 
-	get item
-	add A, INTSIZE * 2
-	mov D, A
-	mov A, [D]
-	call _prn_int
-	add D, INTSIZE
-	mov A, [D]
-	call _prn_int
 	log ''
 exi
 
 func token_list
-	puts '[==========================]', 10
+	puts '[====================================]', 10
+	puts '[  address   func      name          ]', 10
 	var count, table
 	global TOKEN
 	mov D, [A]
@@ -99,7 +105,7 @@ func token_list
 		get count
 		exe token_show
 	cycle count, table, c
-	puts '[==========================]', 10
+	puts '[====================================]', 10
 exi
 
 func token_get
@@ -107,16 +113,12 @@ func token_get
 	arg n
 	imul A, TAB_ITEM_SIZE
 	set n
-
 	global TOKEN
 	add A, INTSIZE
-
 	mov D, A
 	get n
 	add A, D
 exi A
-
-
 
 func token_find
 	use name, len

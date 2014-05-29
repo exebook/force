@@ -29,6 +29,14 @@ func act_prns
 	puts ' '
 	exi
 
+func_prn:
+	act act_prn, R0
+	STEP
+
+func_prns:
+	act act_prns, R0
+	STEP
+
 func_cmp:
 	mov R1, 1
 	mov R0, [RSTACK]
@@ -43,11 +51,18 @@ func_cmp:
 func_num:
 	mov A, REXE
 	mov A, [A + DATA]
-	sub RSTACK, INTSIZE
 	mov R0, [REXE + DATA]
-	mov [RSTACK], R0
+	vmpush R0
 	STEP
 
+func_num1:
+	puts 'num1', 10
+	mov A, REXE
+	mov A, [A + DATA]
+	mov R0, [REXE + DATA]
+	vmpush R0
+	STEP
+	
 func_add:
 	mov R0, [RSTACK]
 	add RSTACK, INTSIZE
@@ -86,20 +101,10 @@ func_dup:
 	mov [RSTACK], R0
 	STEP
 func_over:
-	mov R0, [RSTACK + INTSIZE]
-	sub RSTACK, INTSIZE
-	mov [RSTACK], R0
+	vm_over
 	STEP
 func_drop:
 	add RSTACK, INTSIZE
-	STEP
-
-func_prn:
-	act act_prn, R0
-	STEP
-
-func_prns:
-	act act_prns, R0
 	STEP
 
 func_quit:

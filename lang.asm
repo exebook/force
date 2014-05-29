@@ -101,7 +101,7 @@ macro arg a, b {
 	end if
 }
 
-macro get n, dest {
+macro get n, dest { ; we lose only A
 	push B
 	mov B, n
 	inc B
