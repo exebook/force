@@ -79,9 +79,10 @@ func token_show
 	mov A, [A]
 	call _prn_int
 	
-;	add A, INTSIZE * TAB_DATA
-;	mov A, [A]
-;	call _prn_int
+	get item
+	add A, INTSIZE * TAB_DATA
+	mov A, [A]
+	call _prn_int
 
 	get item
 	mov B, [A]
@@ -130,7 +131,7 @@ func token_find
 	mov D, [A]
 	set table, D
 	set id, 0
-	token_find_loop:
+	.token_find_loop:
 		get id
 		exe token_get
 		mov D, A
@@ -149,6 +150,36 @@ func token_find
 		set id
 		pair id, table
 		sub A, B
-	jne token_find_loop
+	jne .token_find_loop
 	get R
+exi
+
+func token_find_by_func
+	use f
+	var id, table, curr, str
+	global TOKEN
+	mov D, [A]
+	set table, D
+	set id, 0
+	.token_find_loop:
+		get id
+		exe token_get
+		mov D, A
+		mov A, [D + TAB_FUNC * INTSIZE]
+		set curr
+		mov A, [D + TAB_NAME * INTSIZE]
+		set str
+		pair f, curr
+		cmp A, B
+		jne .not_eq
+			puts '#'
+			draw str
+			exi
+		.not_eq:
+		get id
+		inc A
+		set id
+		pair id, table
+		cmp A, B
+	jne .token_find_loop
 exi

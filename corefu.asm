@@ -68,10 +68,10 @@ func act_tok ; return FUNC or 0
 	exe token_find, A, B
 	cmp A, NONE
 	jne .ok
-		puts '*token "'
+		puts 10, '*token "'
 		pair n, s
 		call _prn_str
-		puts '" not_found '
+		puts '" not_found ', 10
 		exi 0
 	.ok:
 	exe token_get
@@ -92,81 +92,6 @@ func_token_dispatch:
 	.skip:
 	STEP
 
-macro put_token_on_stack {
-	mov R0, [REXE + STRING]
-	mov R1, [REXE + DATA]
-	sub RSTACK, INTSIZE
-	mov [RSTACK], R0
-	sub RSTACK, INTSIZE
-	mov [RSTACK], R1
-}
-
-macro cmp_two_strings_on_stack {
-	pushvm
-	mov SI, [RSTACK+INTSIZE]
-	mov C, [RSTACK]
-	mov B, [RSTACK+2*INTSIZE]
-	mov DI, [RSTACK+3*INTSIZE]
-	mov A, 1
-	cmp C, B
-	jne @f
-	cld
-	mov A, 0
-	repe cmpsb
-	je @f
-	mov A, 1
-	@@:
-	popvm
-	add RSTACK, 2*INTSIZE
-}
-
-func_token_cmp:
-	mov R0, func_token_dispatch
-	mov [REXE + FUNC], R0
-	put_token_on_stack
-	cmp_two_strings_on_stack
-	cmp A, 0
-	jne .cont
-	gset CUTMODE, func_token_dispatch
-	add RSTACK, 2*INTSIZE
-	.cont:
-	STEP
-	
-func_token_scan:
-	mov REXE, [REXE] ; *token abc quit -> [abc 3] *quit
-	act act_txtcut ; only uses REXE
-	; put label
-	mov R0, [REXE]
-	sub RSTACK, INTSIZE
-	mov [RSTACK], R0
-	;
-	put_token_on_stack
-	gset CUTMODE, func_token_cmp
-	STEP
-
-func_token_cmp_at:
-	mov R0, func_token_dispatch
-	mov [REXE + FUNC], R0
-	put_token_on_stack
-	cmp_two_strings_on_stack
-	cmp A, 0
-	jne .cont
-	gset CUTMODE, func_token_dispatch
-	add RSTACK, 2*INTSIZE
-	.cont:
-	STEP
-
-func_token_scanat:
-	mov REXE, [RSTACK] ; *token abc quit -> [abc 3] *quit
-	act act_txtcut ; only uses REXE
-	; put label
-	mov R0, [REXE]
-	sub RSTACK, INTSIZE
-	mov [RSTACK], R0
-	;
-	put_token_on_stack
-	gset CUTMODE, func_token_cmp
-	STEP
 
 func act_txtcut ; [*txtcut, quit] -> [*token, txtcut, quit]
 	use info

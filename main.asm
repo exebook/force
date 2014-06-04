@@ -16,45 +16,37 @@ exi
 
 func_test:
 	puts 'test', 10
+	act token_list
+	STEP
+
+func_show:
+	act act_show
 	STEP
 
 func main
+	puts '_____________________________________________', 10
 	exe initmem
 	exe tokens
 	global CODE
-	show_code 'code base'
+;	show_code 'code base'
 
 	var s, t, n
-;	chars '555 .'
-	chars \
-	' token dcall find 12 + get',\
-	' token five create 12 + set ',\
-	' scan ret  555 .   ret',\
-	' token five find 8 + set',\
-	' five five five'
-;	' token five find dup 0 + get . dup 4 + get . dup 8 + get . dup 12 + get . ',\
-;	chars '9999  token const find 12 + get  token five create 12 + set  555 token five find 8 + set  five .' ; example
+	; dscan (caller) -- (name end)
+	;chars 
+	jmp .boot_e_end
+	.boot_e:
+	file 'boot.e'
+	db 0
+	.boot_e_end:
+	mov A, .boot_e
 
-;	chars 'scan ret 333 22 - . ret dup call cr call cr'  ; sample
+;chars\ ; sample 
+;' token dcall find 12 + get',\
+;' token five create 12 + set ',\
+;' scan jump  555 .   R> jump',\
+;' token five find 8 + set',\
+;' five five five'
 
-;	chars 'token + find 12 +    token - find 12 + get swap set 10 1 + .' ; sample
-;	chars '555   token + find 12 + get    token plus create 12 + set    2 2 plus .' ; example
-;	chars '9999  token const find 12 + get  token five create 12 + set  555 token five find 8 + set  five .' ; example
-
-;	token five 
-;	proc five 555 . ret five
-;	chars '0 sysvar get 4 / .'    ; sample
-	;'6 lex scan end 123 . end 555 .'
-	;'12 lex 3 label swap dup . cr >> 555 . ret 1 2 3 4 5 6 . . . . . . .'
-
-;	chars 'token dup 1 + sput'    ; sample 'dup\0'
-;	chars '4 balloc dup  65 over setb ',\
-;	' 1 + 66 over setb',\
-;	' 1 + 67 over setb',\
-;	' 1 + 32 over setb',\
-;	' drop 4 sput'                          ; sample ABC
-
-	;'2 nscan find . . .'; 2 >> . find get . 0 1 - 1 + dup sysvar get . 1 + dup sysvar get . 1 + dup sysvar get . 1 + dup sysvar get . 1 + dup sysvar get .',0
 	set s
 
 	global CODE ; root code
@@ -83,8 +75,10 @@ macro token_ins name, fu, dat {
 }
 
 include 'codefu.asm'
+include 'scan.asm'
 include 'fu2.asm'
 include 'control.asm'
+
 func_cr:
 	puts 10
 	STEP
@@ -120,12 +114,19 @@ func tokens
 	token_ins 'ret', func_ret, 0
 	token_ins 'cr', func_cr, 0
 	token_ins 'scan', func_token_scan, 0
+	token_ins 'dscan', func_token_dscan, 0
 	token_ins 'if', func_if_make, 0
 	token_ins 'ifelse', func_if_else_make, 0
 	token_ins 'create', func_create, 0
 	token_ins 'test', func_test, 0
+	token_ins '>R', func_rpush, 0
+	token_ins 'R>', func_rpop, 0
+	token_ins '@R', func_rpeek, 0
+	token_ins 'jump', func_jump, 0
+	token_ins 'show', func_show, 0
+	token_ins 'end', func_nop, 0
 ;	token_ins '', func_, 0
-	exe token_list
+;	exe token_list
 	exe codefu
 exi
 

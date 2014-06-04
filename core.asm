@@ -1,4 +1,4 @@
-gvar GCOUNT, CODEBASE, CODE, STACK, TOKEN, CALL, CUTMODE, CURTOK
+gvar GCOUNT, CODEBASE, CODE, STACK, TOKEN, RETSTACK, CUTMODE, CURTOK
 
 NEXT equ INTSIZE * 0
 PREV equ INTSIZE * 1
@@ -27,6 +27,9 @@ EXE_OFF equ INTSIZE * EXE_N
 
 macro pushvm { irp R, REXE, RSTACK, RBASE \{ push R \} }
 macro popvm { irp R, RBASE, RSTACK, REXE \{ pop R \} }
+macro rpush X { push X }
+macro rpop X { pop X }
+macro rpeek X { mov X, [SP] }
 
 macro STEP {
 	mov REXE, [REXE]
@@ -70,6 +73,6 @@ func initmem
 	alloc 1000
 	gset TOKEN
 	alloc 1000
-	gset CALL
+	gset RETSTACK
 exi
 

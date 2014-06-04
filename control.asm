@@ -27,15 +27,29 @@ func_if_else_make: ; (n) *ifelse a b quit -> () ifelse ?a->quit ?b->quit
 	mov [REXE + DATA], R1
 	jmp INTTYPE [REXE + FUNC]
 func_call:
-	push REXE
-	mov REXE, [RSTACK]
-	add RSTACK, INTSIZE
+	rpush REXE
+	vmpop REXE
 	jmp INTTYPE [REXE + FUNC]
 func_dcall:
-	push REXE
+	rpush REXE
 	mov REXE, [REXE + DATA]
 	jmp INTTYPE [REXE + FUNC]
 func_ret:
-	pop REXE
+	rpop REXE
 	STEP
-
+func_rpush:
+	vmpop A
+	rpush A
+	STEP
+func_rpop:
+	rpop A
+	vmpush A
+	STEP	
+func_rpeek:
+	rpeek A
+	vmpush A
+	STEP
+func_jump:
+	vmpop REXE
+	STEP
+;	jmp INTTYPE [REXE + FUNC]
