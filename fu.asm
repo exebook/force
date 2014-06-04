@@ -106,7 +106,14 @@ func_over:
 func_drop:
 	add RSTACK, INTSIZE
 	STEP
-
+func_rot:
+	mov R0, [RSTACK]
+	mov R1, [RSTACK + INTSIZE*2]
+	mov [RSTACK], R1
+	mov R1, [RSTACK + INTSIZE]
+	mov [RSTACK + INTSIZE], R0
+	mov [RSTACK + INTSIZE * 2], R1
+	STEP
 func_quit:
 	puts 'quit',10
 	Bye

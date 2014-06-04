@@ -94,6 +94,7 @@ func tokens
 	token_ins 'dup', func_dup, 0
 	token_ins 'over', func_over, 0
 	token_ins 'drop', func_drop, 0
+	token_ins 'rot', func_rot, 0
 	token_ins 'quit', func_quit, 0
 	token_ins 'lex', func_lex, 0
 	token_ins 'label', func_label, 0
@@ -115,8 +116,8 @@ func tokens
 	token_ins 'cr', func_cr, 0
 	token_ins 'scan', func_token_scan, 0
 	token_ins 'dscan', func_token_dscan, 0
-	token_ins 'if', func_if_make, 0
-	token_ins 'ifelse', func_if_else_make, 0
+	token_ins '?', func_if_make, 0
+	token_ins '??', func_if_else_make, 0
 	token_ins 'create', func_create, 0
 	token_ins 'test', func_test, 0
 	token_ins '>R', func_rpush, 0

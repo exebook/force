@@ -51,5 +51,5 @@ func_rpeek:
 	STEP
 func_jump:
 	vmpop REXE
-	STEP
-;	jmp INTTYPE [REXE + FUNC]
+;	STEP
+	jmp INTTYPE [REXE + FUNC]
