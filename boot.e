@@ -43,7 +43,7 @@ end
 proc then end
 proc if
 	@R @
-	block then
+	block then @
 	@R 8 + !
 	` dataif find 12 + @
 	@R 12 + !
@@ -51,11 +51,21 @@ proc if
 	jump
 end
 
-proc f 
-	555 777 1 if swap then .
+proc (
+	@R @
+	block ) @
+	@R 8 + !
+	` djump find 12 + @
+	@R 12 + !
+	R>
+	jump
 end
 
-f f
+proc f 
+	555 777 1 if swap then . drop cr
+	( now we have a comment )
+	555 777 0 if swap then . drop cr
+end
 
-1111 . cr
-quit
+f
+
