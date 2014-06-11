@@ -7,23 +7,27 @@ macro put_token_on_stack {
 	mov [RSTACK], R1
 }
 
-macro cmp_two_strings_on_stack {
+_cmp_two_str_stack:
 	pushvm
 	mov SI, [RSTACK+INTSIZE]
 	mov C, [RSTACK]
 	mov B, [RSTACK+2*INTSIZE]
 	mov DI, [RSTACK+3*INTSIZE]
-	mov A, 1
+	mov A, 0
 	cmp C, B
 	jne @f
-	cld
-	mov A, 0
-	repe cmpsb
-	je @f
-	mov A, 1
+		cld
+		mov A, 1
+		repe cmpsb
+		je @f
+		mov A, 0
 	@@:
 	popvm
 	add RSTACK, 2*INTSIZE
+	ret
+
+macro cmp_two_strings_on_stack {
+	call _cmp_two_str_stack
 }
 
 func_token_cmp:
@@ -32,9 +36,9 @@ func_token_cmp:
 	put_token_on_stack
 	cmp_two_strings_on_stack
 	cmp A, 0
-	jne .cont
-	gset CUTMODE, func_token_dispatch
-	add RSTACK, 2*INTSIZE
+	je .cont
+		gset CUTMODE, func_token_dispatch
+		add RSTACK, 2*INTSIZE
 	.cont:
 	STEP
 	
@@ -49,26 +53,24 @@ func_token_scan:
 	gset CUTMODE, func_token_cmp
 	STEP
 
-func_token_dcmp:
+func_token_cutcmp:
 	mov R0, func_token_dispatch
 	mov [REXE + FUNC], R0
 	put_token_on_stack
 	cmp_two_strings_on_stack
 	cmp A, 0
-	jne .cont
+	je .cont
 		gset CUTMODE, func_token_dispatch
 		add RSTACK, 2*INTSIZE
 		mov R0, REXE ; finish address
 		rpop REXE
-;		rpop R1
-;		rpush R0 ; return to the finish address after all the tokens we skipped
 		vmpush R0
-		mov REXE, [REXE] ; skip dscan's name
+		mov REXE, [REXE] ; skip the argument of cut
 	.cont:
 	STEP
 
-func_token_dscan:
-	rpeek R0
+func_tokens_cut:
+	vmpop R0
 	rpush REXE
 	mov R2, REXE
 	mov REXE, [R0]
@@ -84,7 +86,7 @@ func_token_dscan:
 	mov R0, [R2 + STRING]
 	mov [RSTACK + INTSIZE], R0
 	
-	gset CUTMODE, func_token_dcmp
+	gset CUTMODE, func_token_cutcmp
 	STEP
 
 func_token_cmp_at:
@@ -93,9 +95,9 @@ func_token_cmp_at:
 	put_token_on_stack
 	cmp_two_strings_on_stack
 	cmp A, 0
-	jne .cont
-	gset CUTMODE, func_token_dispatch
-	add RSTACK, 2*INTSIZE
+	je .cont
+		gset CUTMODE, func_token_dispatch
+		add RSTACK, 2*INTSIZE
 	.cont:
 	STEP
 

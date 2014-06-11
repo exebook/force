@@ -47,15 +47,21 @@ func_alloc:
 	mov [RSTACK], R0
 	STEP
 
-func_token: ; put next token name and name length on stack
+func_ttoken: ; put next token name and name length on stack
 	need 1
 	mov REXE, [REXE] ; *token abc quit -> [abc 3] *quit
 	mov R0, [REXE + STRING]
 	mov R1, [REXE + DATA]
-	sub RSTACK, INTSIZE
-	mov [RSTACK], R0
-	sub RSTACK, INTSIZE
-	mov [RSTACK], R1
+	vmpush R0
+	vmpush R1
+	STEP
+
+func_token: ; put next token name and name length on stack
+	mov REXE, [REXE] ; *token abc quit -> [abc 3] *quit
+	mov R0, [REXE + STRING]
+	mov R1, [REXE + DATA]
+	vmpush R0
+	vmpush R1
 	STEP
 
 func_sput:
@@ -66,4 +72,26 @@ func_sput:
 	popall
 	add RSTACK, INTSIZE * 2
 	STEP
-
+func_scmp:
+	cmp_two_strings_on_stack
+	vmpush A
+	STEP
+func_depth:
+	global STACK_BASE
+	mov R2, RSTACK
+	sub R0, R2
+	mov R2, INTSIZE
+	mov R1, 0
+	idiv R2
+ 	vmpush R0
+	STEP
+func_rdepth:
+	global RETSTACK
+	mov R2, R0
+	global RETSTACK_BASE
+	sub R0, R2
+	mov R2, INTSIZE
+	mov R1, 0
+	idiv R2
+	vmpush R0
+	STEP

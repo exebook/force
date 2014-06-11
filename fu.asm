@@ -5,8 +5,13 @@ func_intsize:
 	
 func_nop:
 	pushall
-	puts 'nop '
+	puts 'nop: {'
+	mov B, [REXE + STRING]
+	mov A, 10
+	call _prn_str
+	puts '}', 10
 	popall
+	Bye
 	STEP
 
 func act_prn
@@ -43,7 +48,7 @@ func_cmp:
 	add RSTACK, INTSIZE
 	cmp R0, [RSTACK]
 	je .e
-	mov R1, 0
+		mov R1, 0
 	.e:
 	mov [RSTACK], R1
 	STEP
@@ -113,6 +118,11 @@ func_rot:
 	mov R1, [RSTACK + INTSIZE]
 	mov [RSTACK + INTSIZE], R0
 	mov [RSTACK + INTSIZE * 2], R1
+	STEP
+func_pick:
+	vmpop R1
+	mov R0, [RSTACK + R1 * INTSIZE]
+	vmpush R0
 	STEP
 func_quit:
 	puts 'quit',10

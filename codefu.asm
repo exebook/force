@@ -1,9 +1,3 @@
-func_label:
-	sub RSTACK, INTSIZE
-	mov R0, [REXE]
-	mov [RSTACK], R0
-	STEP
-
 func_get_exe:
 	STEP
 

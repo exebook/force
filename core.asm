@@ -1,4 +1,5 @@
-gvar GCOUNT, CODEBASE, CODE, STACK, TOKEN, RETSTACK, CUTMODE, CURTOK
+gvar GCOUNT, CODEBASE, CODE, STACK, TOKEN, RETSTACK, CUTMODE, CURTOK, STACK_BASE, RETSTACK_BASE
+
 
 NEXT equ INTSIZE * 0
 PREV equ INTSIZE * 1
@@ -27,9 +28,35 @@ EXE_OFF equ INTSIZE * EXE_N
 
 macro pushvm { irp R, REXE, RSTACK, RBASE \{ push R \} }
 macro popvm { irp R, RBASE, RSTACK, REXE \{ pop R \} }
-macro rpush X { push X }
-macro rpop X { pop X }
-macro rpeek X { mov X, [SP] }
+
+macro rpop reg {
+	mov reg, [memory + RETSTACK]
+	mov reg, [reg]
+	add [memory + RETSTACK], INTSIZE
+}
+
+macro rpush reg {
+	if reg eq A
+		push B
+		sub [memory + RETSTACK], INTSIZE
+		mov B, [memory + RETSTACK]
+		mov [B], reg
+		pop B
+	else
+		push A
+		sub [memory + RETSTACK], INTSIZE
+		mov A, [memory + RETSTACK]
+		mov [A], reg
+		pop A
+	end if
+}
+macro rpeek reg {
+	mov reg, [memory + RETSTACK]
+	mov reg, [reg]
+}
+;macro rpush X { push X }
+;macro rpop X { pop X }
+;macro rpeek X { mov X, [SP] }
 
 macro STEP {
 	mov REXE, [REXE]
@@ -62,17 +89,21 @@ macro vmpush reg {
 }
 
 func initmem
-	alloc 1000
+	alloc 10000
 	gset CODE
 	gset CODEBASE
 
-	alloc 1000
-	add A, 1000 * INTSIZE
+	alloc 10000
+	add A, 10000 * INTSIZE
+	gset STACK_BASE
 	gset STACK
 
-	alloc 1000
+	alloc 10000
 	gset TOKEN
-	alloc 1000
+	
+	alloc 10000
+	add A, 10000 * INTSIZE
+	gset RETSTACK_BASE
 	gset RETSTACK
 exi
 

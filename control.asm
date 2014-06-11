@@ -1,3 +1,10 @@
+func_dataif:
+	vmpop R0
+	cmp R0, 0
+	jne .l
+	mov REXE, [REXE + DATA]
+	.l:
+	STEP
 func_if:
 	vmpop R0
 	cmp R0, 0
@@ -42,14 +49,34 @@ func_rpush:
 	rpush A
 	STEP
 func_rpop:
-	rpop A
-	vmpush A
+	rpop R0
+	vmpush R0
 	STEP	
 func_rpeek:
 	rpeek A
 	vmpush A
 	STEP
+func_label:
+	rpush REXE
+	STEP
+func_jz:
+	vmpop R0
+	vmpop R1
+	cmp R0, 0
+	jne .zero
+		mov REXE, R1
+		jmp INTTYPE [REXE + FUNC]
+	.zero:
+	STEP
+func_jnz:
+	vmpop R0
+	vmpop R1
+	cmp R0, 0
+	je .zero
+		mov REXE, R1
+		jmp INTTYPE [REXE + FUNC]
+	.zero:
+	STEP
 func_jump:
 	vmpop REXE
-;	STEP
 	jmp INTTYPE [REXE + FUNC]
