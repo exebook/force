@@ -3,7 +3,7 @@
 `` proc create 12 + !
 
 scan procend
-	@R cut end
+	R> cut end
 	swap dup	dup 16 + @ swap 8 + @ create
 	dup 12 +	` dcall find 12 + @	swap !
 	8 +
@@ -68,4 +68,9 @@ proc f
 end
 
 f
+
+.
+
+depth . rdepth . 
+
 
