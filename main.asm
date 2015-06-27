@@ -126,9 +126,9 @@ func tokens
 	token_ins 'find', func_find, 0
 	token_ins 'sput', func_sput, 0
 	token_ins 'call', func_call, 0
-	token_ins 'dcall', func_dcall, 0
+	token_ins '^call', func_dcall, 0
 	token_ins 'ret', func_ret, 0
-	token_ins 'dataif', func_dataif, 0
+	token_ins '^if', func_dataif, 0
 	token_ins 'cr', func_cr, 0
 	token_ins 'scan', func_token_scan, 0
 	token_ins 'cut', func_tokens_cut, 0
@@ -139,7 +139,7 @@ func tokens
 	token_ins 'R>', func_rpop, 0
 	token_ins '@R', func_rpeek, 0
 	token_ins 'jump', func_jump, 0
-	token_ins 'djump', func_djump, 0
+	token_ins '^jump', func_djump, 0
 	token_ins 'jz', func_jz, 0
 	token_ins 'jnz', func_jnz, 0
 	token_ins 'show', func_show, 0

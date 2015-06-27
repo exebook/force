@@ -1,71 +1,87 @@
 1000001
-`` dcall find 12 + @
-`` proc create 12 + !
+`` ^call find 12 + @
+: create 12 + !
 
-scan procend
-	R> cut end
+scan word;
+	R> cut ;
 	swap dup	dup 16 + @ swap 8 + @ create
-	dup 12 +	` dcall find 12 + @	swap !
+	dup 12 +	` ^call find 12 + @	swap !
 	8 +
 	swap @ swap !
 	dup	` ret find 12 + @ swap 12 + !
 	>R ret
-procend
+word;
 
-`` proc find 8 + !
+`` : find 8 + !
 
-proc loop_sample
+
+: Call R> swap >R >R ;
+: twice: R> R> dup Call Call >R ;
+: quad twice: dup + ;
+: fives @R >R 555 . cr 554 . cr ;
+
+fives
+50 quad
+
+: @FUNC 12 + @ ;
+: !FUNC 12 + ! ;
+: @DATA 8 + @ ;
+: !DATA 8 + ! ;
+: @STRING 16 + @ ;
+: !STRING 16 + ! ;
+
+: loop_sample
 	5 label @R >R dup . 1 - dup . cr dup ? ret drop R> drop cr
 	R> drop
-end
+;
 
-proc show_both
+: show_both
 	over over sput ` <---> sput >R >R over over sput R> R> cr
-end
+;
 
-proc block_step
+: block_step
 	>R >R >R @ R> R> R>
-end
+;
 
-proc block
+: block
 	R> @ dup >R
-	dup 16 + @ swap 8 + @
+	dup @STRING swap @DATA
 	label
 		2 pick
-		dup 16 + @ swap 8 + @
+		dup @STRING swap @DATA
 		scmp neg
 		dup ? block_step
 	@R >R ? ret
 	drop drop
 	R> R> drop drop
-end
+;
 
-proc then end
-proc if
+: then ;
+: if
 	@R @
 	block then @
-	@R 8 + !
-	` dataif find 12 + @
-	@R 12 + !
+	@R !DATA
+	` ^if find @FUNC
+	@R !FUNC
 	R>
 	jump
-end
+;
 
-proc (
+: (
 	@R @
 	block ) @
-	@R 8 + !
-	` djump find 12 + @
-	@R 12 + !
+	@R !DATA
+	` ^jump find @FUNC
+	@R !FUNC
 	R>
 	jump
-end
+;
 
-proc f 
+: f 
 	555 777 1 if swap then . drop cr
 	( now we have a comment )
-	555 777 0 if swap then . drop cr
-end
+	555 777 1 if swap then . drop cr
+;
 
 f
 
@@ -74,3 +90,6 @@ f
 depth . rdepth . 
 
 
+"hello world" sput sput
+
+( todo: add flip )

@@ -19,6 +19,32 @@ macro act fu, a, b, c {
 	mov A, R1
 }
 
+macro parse_int {
+	var x, z
+	set z, 0
+	set x, 0
+	.l1:	
+		get x
+		imul A, 10
+		set x
+		pair s, z
+		mov al, byte [A + B]
+		and A, 0xff
+		sub al, '0'
+		mov D, A
+		change x, D
+		change z, 1
+		pair z, n
+		cmp A, B
+	jne .l1
+	get info, D
+	mov D, [D + DATA]
+	get x
+	mov [D + DATA], A
+	mov A, func_num
+	mov [D + FUNC], A
+}
+
 func act_tok ; return FUNC or 0
 	use info
 
@@ -37,30 +63,7 @@ func act_tok ; return FUNC or 0
 	jl .no
 	cmp al, '9'
 	jg .no
-		; NUMBER
-		var x, z
-		set z, 0
-		set x, 0
-		.l1:	
-			get x
-			imul A, 10
-			set x
-			pair s, z
-			mov al, byte [A + B]
-			and A, 0xff
-			sub al, '0'
-			mov D, A
-			change x, D
-			change z, 1
-			pair z, n
-			cmp A, B
-		jne .l1
-		get info, D
-		mov D, [D + DATA]
-		get x
-		mov [D + DATA], A
-		mov A, func_num
-		mov [D + FUNC], A
+		parse_int
 		exi A
 	.no:
 
@@ -68,10 +71,10 @@ func act_tok ; return FUNC or 0
 	exe token_find, A, B
 	cmp A, NONE
 	jne .ok
-		puts 10, '*token "'
-		pair n, s
-		call _prn_str
-		puts '" not_found ', 10
+;		puts 10, '*token "'
+;		pair n, s
+;		call _prn_str
+;		puts '" not_found ', 10
 		exi 0
 	.ok:
 	exe token_get
@@ -90,6 +93,10 @@ func_token_dispatch:
 	je .skip
 	jmp A
 	.skip:
+	mov R0, [REXE + STRING]
+	vmpush R0
+	mov R0, [REXE + DATA]
+	vmpush R0
 	STEP
 
 
